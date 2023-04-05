@@ -1,6 +1,8 @@
 class Api::V1::UsersController < ApplicationController
+  before_action :set_user, only: %i[show update destroy]
+
   def show
-    render json: User.find(params[:id])
+    render json: @user
   end
 
   def create
@@ -14,7 +16,6 @@ class Api::V1::UsersController < ApplicationController
   end
 
   def update
-    @user = User.find(params[:id])
     if @user.update(user_params)
       render json: @user, status: :ok
     else
@@ -23,7 +24,6 @@ class Api::V1::UsersController < ApplicationController
   end
 
   def destroy
-    @user = User.find(params[:id])
     @user.destroy
     head 204
   end
@@ -32,5 +32,9 @@ class Api::V1::UsersController < ApplicationController
 
   def user_params
     params.require(:user).permit(:email, :password)
+  end
+
+  def set_user
+    @user = User.find(params[:id])
   end
 end
