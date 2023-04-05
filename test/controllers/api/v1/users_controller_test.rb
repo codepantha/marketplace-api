@@ -41,6 +41,13 @@ module Api
         patch api_v1_user_url(@user), params: { user: { email: 'bad email', password: '123456' } }, as: :json
         assert_response :unprocessable_entity
       end
+
+      test 'should delete user' do
+        assert_difference('User.count', -1) do
+          delete api_v1_user_url(@user), as: :json
+        end
+        assert_response :no_content
+      end
     end
   end
 end
