@@ -4,18 +4,21 @@ class Api::V1::ProductsController < ApplicationController
   before_action :check_owner, only: %i[update destroy]
 
   def index
-    render json: Product.all
+    @products = Product.search # use the search method created on Product model
+    render json: ProductSerializer.new(@products).serializable_hash.to_json
   end
 
   def show
-    render json: @product
+    # include attributes of the user who owns the product
+    options = { include: [:user] }
+    render json: ProductSerializer.new(@product, options).serializable_hash.to_json
   end
 
   def create
     product = current_user.products.new(product_params)
 
     if product.save
-      render json: product, status: :created
+      render json: ProductSerializer.new(product).serializable_hash.to_json, status: :created
     else
       render json: { errors: product.errors }, status: :unprocessable_entity
     end
@@ -23,7 +26,7 @@ class Api::V1::ProductsController < ApplicationController
 
   def update
     if @product.update(product_params)
-      render json: @product, status: :ok
+      render json: ProductSerializer.new(@product).serializable_hash.to_json, status: :ok
     else
       render json: { errors: @product.errors }, status: :unprocessable_entity
     end
