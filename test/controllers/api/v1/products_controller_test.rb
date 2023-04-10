@@ -38,7 +38,7 @@ class Api::V1::ProductsControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
-  test 'should  update product' do
+  test 'should update product' do
     patch api_v1_product_url(@product),
           params: { product: { title: @product.title }},
           headers: { Authorization: JsonWebToken.encode(user_id: @user.id) },
@@ -55,6 +55,24 @@ class Api::V1::ProductsControllerTest < ActionDispatch::IntegrationTest
           headers: { Authorization: JsonWebToken.encode(user_id: user2.id) },
           as: :json
 
+    assert_response :unauthorized
+  end
+
+  test 'should delete product' do
+    assert_difference('Product.count', -1) do
+      delete api_v1_product_url(@product),
+             headers: { Authorization: JsonWebToken.encode(user_id: @product.user.id) },
+             as: :json
+    end
+    assert_response :no_content
+  end
+
+  test 'should not delete product if it doesn\'t belong to user' do
+    assert_no_difference('Product.count') do
+      delete api_v1_product_url(@product),
+             headers: { Authorization: JsonWebToken.encode(user_id: users(:two).id) },
+             as: :json
+    end
     assert_response :unauthorized
   end
 end
